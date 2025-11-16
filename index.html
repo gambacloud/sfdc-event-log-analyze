@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Salesforce Event Log – User Field Access Analyzer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- CSV parser -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- GZIP decompression -->
+  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #020617;
+      --card: #020617;
+      --card-soft: #0b1120;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.07);
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #f97373;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 55%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1200px;
+      background: linear-gradient(145deg, rgba(15,23,42,0.96), rgba(15,23,42,0.99));
+      border-radius: 24px;
+      border: 1px solid rgba(148,163,184,0.25);
+      box-shadow:
+        0 22px 50px rgba(15,23,42,0.75),
+        0 0 0 1px rgba(15,23,42,0.9);
+      padding: 22px 24px 24px;
+      backdrop-filter: blur(16px);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #e0f2fe, #38bdf8 40%, #0ea5e9 70%, #1e3a8a 100%);
+      box-shadow: 0 0 20px rgba(56,189,248,0.8);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .pill {
+      padding: 4px 10px;
+      font-size: 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.4);
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .pill span {
+      display: inline-flex;
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 8px rgba(34,197,94,0.8);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      body { padding: 12px; }
+      .app { padding: 16px; }
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.09), transparent 70%);
+      background-color: rgba(15,23,42,0.98);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 14px 14px 16px;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .card small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(148,163,184,0.6);
+      background: rgba(15,23,42,0.96);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.45);
+    }
+
+    .file-drop {
+      border-radius: 14px;
+      border: 1px dashed rgba(148,163,184,0.7);
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(15,23,42,0.9);
+      transition: border-color 0.2s, background 0.2s, transform 0.1s;
+      margin-bottom: 10px;
+    }
+
+    .file-drop:hover {
+      border-color: var(--accent);
+      background: rgba(15,23,42,0.95);
+      transform: translateY(-1px);
+    }
+
+    .file-drop input {
+      display: none;
+    }
+
+    .file-drop-title {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .file-drop-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.4);
+      background: rgba(15,23,42,0.8);
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .row-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      margin-top: 10px;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .status-line {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .status-line .danger {
+      color: var(--danger);
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: radial-gradient(circle at top left, #38bdf8, #0ea5e9 40%, #0369a1 100%);
+      color: #e0f2fe;
+      box-shadow:
+        0 10px 25px rgba(56,189,248,0.4),
+        0 0 0 1px rgba(8,47,73,0.7);
+      transition: transform 0.1s, box-shadow 0.1s, filter 0.1s;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+      box-shadow:
+        0 14px 30px rgba(56,189,248,0.5),
+        0 0 0 1px rgba(8,47,73,1);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: rgba(15,23,42,0.95);
+      color: var(--muted);
+      border: 1px solid rgba(148,163,184,0.5);
+      box-shadow: none;
+    }
+
+    .btn-secondary:hover {
+      filter: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.45);
+      transform: translateY(-1px);
+    }
+
+    .right-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .chip {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.4);
+      padding: 3px 8px;
+      background: rgba(15,23,42,0.9);
+    }
+
+    .chip strong {
+      color: var(--text);
+      margin-left: 4px;
+    }
+
+    .summary-block {
+      margin-top: 4px;
+      padding: 8px 8px 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,0.9);
+      max-height: 200px;
+      overflow: auto;
+      font-size: 12px;
+    }
+
+    .summary-block h3 {
+      margin: 0 0 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .summary-line {
+      margin-bottom: 2px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .summary-line span:first-child {
+      min-width: 90px;
+      font-weight: 500;
+    }
+
+    .of-summary {
+      margin-top: 6px;
+      border-top: 1px solid rgba(31,41,55,0.7);
+      padding-top: 6px;
+      font-size: 11px;
+    }
+
+    .of-summary-details {
+      margin-top: 4px;
+      max-height: 220px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 11px;
+    }
+
+    .of-summary-details details {
+      margin-bottom: 4px;
+      border-radius: 8px;
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(31,41,55,0.9);
+      padding: 4px 6px;
+    }
+
+    .of-summary-details summary {
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .of-summary-details summary::marker,
+    .of-summary-details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .badge-count {
+      font-size: 10px;
+      color: var(--muted);
+      margin-left: 6px;
+    }
+
+    .field-pill {
+      display: inline-block;
+      margin: 1px 4px 1px 0;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.4);
+      background: rgba(15,23,42,0.9);
+    }
+
+    .table-wrapper {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,0.98);
+      overflow: auto;
+      max-height: 280px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      min-width: 600px;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      background: rgba(15,23,42,0.98);
+      box-shadow: 0 1px 0 rgba(15,23,42,0.9);
+    }
+
+    th, td {
+      padding: 6px 8px;
+      text-align: left;
+      border-bottom: 1px solid rgba(31,41,55,0.7);
+      white-space: nowrap;
+    }
+
+    th {
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15,23,42,0.94);
+    }
+
+    tbody tr:hover {
+      background: rgba(15,23,42,0.99);
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <div class="title">
+          <div class="logo-dot"></div>
+          <div>
+            <h1>User Field Access Analyzer</h1>
+            <div class="subtitle">
+              Upload Salesforce EventLogFile and see which Objects & Fields a specific user touched.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pill">
+        <span></span>
+        Static – GitHub Pages – Local-only
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- LEFT: File + Mapping + Filters -->
+      <section class="card">
+        <h2>1. Load Event Log File</h2>
+        <small>Download an EventLogFile (CSV or GZIP) from Salesforce Event Monitoring and drop it here.</small>
+
+        <div class="file-drop" id="fileDrop">
+          <input type="file" id="fileInput" accept=".csv,.gz,.gzip,.txt" />
+          <div class="file-drop-title" id="fileDropTitle">Click to select a file or drop it here</div>
+          <div class="file-drop-sub">Supports CSV or GZIP output directly from EventLogFile.LogFile.</div>
+        </div>
+
+        <div class="meta" id="fileMeta" style="display:none;">
+          <div class="badge" id="metaFileName"></div>
+          <div class="badge" id="metaRows"></div>
+          <div class="badge" id="metaColumns"></div>
+        </div>
+
+        <div class="section-title">2. Column Mapping</div>
+        <small>Select which columns represent user, object and field.</small>
+
+        <div class="row-3">
+          <div>
+            <label for="colUserId">User Id column</label>
+            <select id="colUserId">
+              <option value="">(none)</option>
+            </select>
+          </div>
+          <div>
+            <label for="colObject">Object column</label>
+            <select id="colObject">
+              <option value="">(none)</option>
+            </select>
+          </div>
+          <div>
+            <label for="colField">Field column</label>
+            <select id="colField">
+              <option value="">(none)</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-2">
+          <div>
+            <label for="colQuery">Query / SOQL column (optional)</label>
+            <select id="colQuery">
+              <option value="">(none)</option>
+            </select>
+          </div>
+          <div>
+            <label for="colTimestamp">Timestamp column (optional)</label>
+            <select id="colTimestamp">
+              <option value="">(none)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-title">3. Filters (per user)</div>
+        <small>At least User Id is recommended. Object / Field / Query are contains-filters.</small>
+
+        <div class="row-2">
+          <div>
+            <label for="filterUserId">User Id (or partial)</label>
+            <input type="text" id="filterUserId" placeholder="e.g. 005..." />
+          </div>
+          <div>
+            <label for="filterObject">Object name contains</label>
+            <input type="text" id="filterObject" placeholder="e.g. Lead, Account" />
+          </div>
+        </div>
+        <div class="row-2">
+          <div>
+            <label for="filterField">Field name contains</label>
+            <input type="text" id="filterField" placeholder="e.g. Email, Phone" />
+          </div>
+          <div>
+            <label for="filterQuery">Text in QUERY / SOQL</label>
+            <input type="text" id="filterQuery" placeholder="optional free text" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <button id="btnAnalyze" disabled>🔍 Analyze user access</button>
+          <button id="btnClearFilters" class="btn-secondary">Clear filters</button>
+        </div>
+
+        <div class="status-line" id="statusLine">
+          No file loaded yet.
+        </div>
+      </section>
+
+      <!-- RIGHT: Summary + Table -->
+      <section class="card">
+        <div class="right-header">
+          <div>
+            <h2>User access summary</h2>
+            <small>Build per-user permissions based on actual logged access.</small>
+          </div>
+          <button id="btnDownloadFiltered" class="btn-secondary" disabled>⬇️ Download filtered CSV</button>
+        </div>
+
+        <div class="chips">
+          <div class="chip">
+            Total rows in file:<strong id="chipTotalRows">0</strong>
+          </div>
+          <div class="chip">
+            Rows after filter:<strong id="chipFilteredRows">0</strong>
+          </div>
+          <div class="chip">
+            Unique objects:<strong id="chipUniqueObjects">0</strong>
+          </div>
+          <div class="chip">
+            Unique object+field pairs:<strong id="chipUniquePairs">0</strong>
+          </div>
+        </div>
+
+        <div class="summary-block" id="summaryBlock" style="display:none;">
+          <h3>Per-user access</h3>
+          <div class="summary-line">
+            <span>Events:</span><span id="summaryEventsCount">0</span>
+          </div>
+          <div class="summary-line">
+            <span>Unique Objects:</span><span id="summaryObjectsCount">0</span>
+          </div>
+          <div class="summary-line">
+            <span>Unique Fields:</span><span id="summaryFieldsCount">0</span>
+          </div>
+
+          <div class="of-summary">
+            <strong>Objects → Fields accessed</strong>
+            <div class="of-summary-details" id="ofSummaryDetails"></div>
+          </div>
+        </div>
+
+        <div class="table-wrapper" id="tableWrapper">
+          <table>
+            <thead>
+              <tr id="resultsHeaderRow"></tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let rawRows = [];
+    let filteredRows = [];
+    let csvFields = [];
+    let fileLoaded = false;
+
+    const MAX_TABLE_ROWS = 1000; // Only for on-screen sample table
+
+    const dom = {
+      fileInput: document.getElementById("fileInput"),
+      fileDrop: document.getElementById("fileDrop"),
+      fileDropTitle: document.getElementById("fileDropTitle"),
+      fileMeta: document.getElementById("fileMeta"),
+      metaFileName: document.getElementById("metaFileName"),
+      metaRows: document.getElementById("metaRows"),
+      metaColumns: document.getElementById("metaColumns"),
+
+      colUserId: document.getElementById("colUserId"),
+      colObject: document.getElementById("colObject"),
+      colField: document.getElementById("colField"),
+      colQuery: document.getElementById("colQuery"),
+      colTimestamp: document.getElementById("colTimestamp"),
+
+      filterUserId: document.getElementById("filterUserId"),
+      filterObject: document.getElementById("filterObject"),
+      filterField: document.getElementById("filterField"),
+      filterQuery: document.getElementById("filterQuery"),
+
+      btnAnalyze: document.getElementById("btnAnalyze"),
+      btnClearFilters: document.getElementById("btnClearFilters"),
+      btnDownloadFiltered: document.getElementById("btnDownloadFiltered"),
+
+      statusLine: document.getElementById("statusLine"),
+
+      chipTotalRows: document.getElementById("chipTotalRows"),
+      chipFilteredRows: document.getElementById("chipFilteredRows"),
+      chipUniqueObjects: document.getElementById("chipUniqueObjects"),
+      chipUniquePairs: document.getElementById("chipUniquePairs"),
+
+      summaryBlock: document.getElementById("summaryBlock"),
+      summaryEventsCount: document.getElementById("summaryEventsCount"),
+      summaryObjectsCount: document.getElementById("summaryObjectsCount"),
+      summaryFieldsCount: document.getElementById("summaryFieldsCount"),
+      ofSummaryDetails: document.getElementById("ofSummaryDetails"),
+
+      tableWrapper: document.getElementById("tableWrapper"),
+      resultsHeaderRow: document.getElementById("resultsHeaderRow"),
+      resultsBody: document.getElementById("resultsBody"),
+    };
+
+    function setStatus(text, isError = false) {
+      dom.statusLine.innerHTML = isError
+        ? '<span class="danger">Error:</span> ' + text
+        : text;
+    }
+
+    function guessColumn(fieldNames, candidates) {
+      const lowerFields = fieldNames.map(f => f.toLowerCase());
+      for (const c of candidates) {
+        const idx = lowerFields.indexOf(c.toLowerCase());
+        if (idx !== -1) return fieldNames[idx];
+      }
+      for (const f of fieldNames) {
+        for (const c of candidates) {
+          if (f.toLowerCase().includes(c.toLowerCase())) {
+            return f;
+          }
+        }
+      }
+      return "";
+    }
+
+    function populateSelect(selectEl, fields, guessedName) {
+      selectEl.innerHTML = '<option value="">(none)</option>';
+      fields.forEach(f => {
+        const opt = document.createElement("option");
+        opt.value = f;
+        opt.textContent = f;
+        if (guessedName && f === guessedName) {
+          opt.selected = true;
+        }
+        selectEl.appendChild(opt);
+      });
+    }
+
+    function handleFile(file) {
+      if (!file) return;
+      fileLoaded = false;
+      setStatus("Loading file...");
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const buffer = e.target.result;
+        let text;
+
+        const bytes = new Uint8Array(buffer);
+        const isGzip = bytes[0] === 0x1f && bytes[1] === 0x8b;
+
+        try {
+          if (isGzip) {
+            const decompressed = window.pako.inflate(bytes, { to: "string" });
+            text = decompressed;
+          } else {
+            text = new TextDecoder("utf-8").decode(bytes);
+          }
+        } catch (err) {
+          console.error(err);
+          setStatus("Failed to decode file (GZIP/text). Make sure it's a raw EventLogFile.LogFile output.", true);
+          return;
+        }
+
+        Papa.parse(text, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+            rawRows = results.data || [];
+            csvFields = results.meta.fields || [];
+
+            if (!rawRows.length || !csvFields.length) {
+              setStatus("File loaded but no rows/columns found. Check that it's an EventLogFile CSV.", true);
+              return;
+            }
+
+            fileLoaded = true;
+            dom.btnAnalyze.disabled = false;
+
+            dom.fileMeta.style.display = "flex";
+            dom.metaFileName.textContent = "File: " + (file.name || "unnamed");
+            dom.metaRows.textContent = "Rows: " + rawRows.length.toLocaleString("en-US");
+            dom.metaColumns.textContent = "Columns: " + csvFields.length.toLocaleString("en-US");
+            dom.chipTotalRows.textContent = rawRows.length.toLocaleString("en-US");
+
+            // Guess columns
+            const guessedUserId = guessColumn(csvFields, ["USER_ID", "USERID", "USER", "ACTOR_ID"]);
+            const guessedObject = guessColumn(csvFields, ["RESP_OBJECT_TYPE", "OBJECT", "SOBJECTTYPE", "SOBJECT_TYPE"]);
+            const guessedField = guessColumn(csvFields, ["RESP_FIELD", "FIELD", "FIELD_NAME"]);
+            const guessedQuery = guessColumn(csvFields, ["QUERY", "SOQL", "REQUEST_PARAMETERS"]);
+            const guessedTime = guessColumn(csvFields, ["TIMESTAMP", "DATE", "EVENT_DATE", "LOGDATE"]);
+
+            populateSelect(dom.colUserId, csvFields, guessedUserId);
+            populateSelect(dom.colObject, csvFields, guessedObject);
+            populateSelect(dom.colField, csvFields, guessedField);
+            populateSelect(dom.colQuery, csvFields, guessedQuery);
+            populateSelect(dom.colTimestamp, csvFields, guessedTime);
+
+            setStatus("File loaded. Map columns, enter a user filter and click \"Analyze user access\".");
+            filteredRows = [];
+            updateViews();
+          }
+        });
+      };
+
+      reader.onerror = function() {
+        setStatus("Error reading file.", true);
+      };
+
+      reader.readAsArrayBuffer(file);
+      dom.fileDropTitle.textContent = file.name;
+    }
+
+    // Drag & drop
+    dom.fileDrop.addEventListener("click", () => dom.fileInput.click());
+    dom.fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      handleFile(file);
+    });
+
+    dom.fileDrop.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dom.fileDrop.style.borderColor = "var(--accent)";
+    });
+
+    dom.fileDrop.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dom.fileDrop.style.borderColor = "rgba(148,163,184,0.7)";
+    });
+
+    dom.fileDrop.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dom.fileDrop.style.borderColor = "rgba(148,163,184,0.7)";
+      const file = e.dataTransfer.files[0];
+      handleFile(file);
+    });
+
+    // Analyze button
+    dom.btnAnalyze.addEventListener("click", () => {
+      if (!fileLoaded) {
+        setStatus("No file loaded.", true);
+        return;
+      }
+
+      const colUser = dom.colUserId.value || "";
+      const colObj = dom.colObject.value || "";
+      const colFld = dom.colField.value || "";
+      const colQry = dom.colQuery.value || "";
+
+      if (!colUser) {
+        setStatus("Please select a User Id column.", true);
+        return;
+      }
+
+      const userFilter = dom.filterUserId.value.trim().toLowerCase();
+      const objFilter = dom.filterObject.value.trim().toLowerCase();
+      const fldFilter = dom.filterField.value.trim().toLowerCase();
+      const qryFilter = dom.filterQuery.value.trim().toLowerCase();
+
+      if (!userFilter && !objFilter && !fldFilter && !qryFilter) {
+        setStatus("It's recommended to enter at least a User Id filter.", true);
+        return;
+      }
+
+      filteredRows = rawRows.filter(row => {
+        let ok = true;
+
+        if (userFilter) {
+          const v = (row[colUser] || "").toString().toLowerCase();
+          ok = ok && v.includes(userFilter);
+        }
+
+        if (objFilter && colObj) {
+          const v = (row[colObj] || "").toString().toLowerCase();
+          ok = ok && v.includes(objFilter);
+        }
+
+        if (fldFilter && colFld) {
+          const v = (row[colFld] || "").toString().toLowerCase();
+          ok = ok && v.includes(fldFilter);
+        }
+
+        if (qryFilter && colQry) {
+          const v = (row[colQry] || "").toString().toLowerCase();
+          ok = ok && v.includes(qryFilter);
+        }
+
+        return ok;
+      });
+
+      setStatus("Found " + filteredRows.length.toLocaleString("en-US") + " events matching the filters.");
+      updateViews();
+    });
+
+    dom.btnClearFilters.addEventListener("click", () => {
+      dom.filterUserId.value = "";
+      dom.filterObject.value = "";
+      dom.filterField.value = "";
+      dom.filterQuery.value = "";
+      setStatus("Filters cleared. Enter new filters and click \"Analyze user access\".");
+    });
+
+    function updateViews() {
+      const colObj = dom.colObject.value || "";
+      const colFld = dom.colField.value || "";
+      const colUser = dom.colUserId.value || "";
+      const colQry = dom.colQuery.value || "";
+      const colTime = dom.colTimestamp.value || "";
+
+      dom.chipTotalRows.textContent = rawRows.length.toLocaleString("en-US");
+      dom.chipFilteredRows.textContent = filteredRows.length.toLocaleString("en-US");
+
+      // Build unique objects and object+field pairs
+      const objectSet = new Set();
+      const fieldSet = new Set();
+      const objectFieldMap = new Map(); // objectName -> Set(fields)
+
+      if (filteredRows.length) {
+        filteredRows.forEach(row => {
+          const objName = colObj ? (row[colObj] || "").toString() : "";
+          const fldName = colFld ? (row[colFld] || "").toString() : "";
+
+          if (objName) {
+            objectSet.add(objName);
+            if (!objectFieldMap.has(objName)) {
+              objectFieldMap.set(objName, new Set());
+            }
+            if (fldName) {
+              objectFieldMap.get(objName).add(fldName);
+              fieldSet.add(objName + "::" + fldName);
+            }
+          }
+        });
+      }
+
+      dom.chipUniqueObjects.textContent = objectSet.size.toLocaleString("en-US");
+      dom.chipUniquePairs.textContent = fieldSet.size.toLocaleString("en-US");
+
+      if (filteredRows.length) {
+        dom.summaryBlock.style.display = "block";
+        dom.summaryEventsCount.textContent = filteredRows.length.toLocaleString("en-US");
+        dom.summaryObjectsCount.textContent = objectSet.size.toLocaleString("en-US");
+
+        // Count unique field names total (ignoring object separation)
+        const pureFieldNames = new Set();
+        objectFieldMap.forEach(set => {
+          set.forEach(f => pureFieldNames.add(f));
+        });
+        dom.summaryFieldsCount.textContent = pureFieldNames.size.toLocaleString("en-US");
+
+        // Build Object → Fields details
+        dom.ofSummaryDetails.innerHTML = "";
+        const sortedObjects = Array.from(objectFieldMap.keys()).sort();
+        sortedObjects.forEach(objName => {
+          const fields = Array.from(objectFieldMap.get(objName)).sort();
+          const details = document.createElement("details");
+          const summary = document.createElement("summary");
+          summary.textContent = objName;
+          const badge = document.createElement("span");
+          badge.className = "badge-count";
+          badge.textContent = "(" + fields.length.toLocaleString("en-US") + " fields)";
+          summary.appendChild(badge);
+          details.appendChild(summary);
+
+          const inner = document.createElement("div");
+          fields.forEach(f => {
+            const span = document.createElement("span");
+            span.className = "field-pill";
+            span.textContent = f;
+            inner.appendChild(span);
+          });
+          details.appendChild(inner);
+          dom.ofSummaryDetails.appendChild(details);
+        });
+      } else {
+        dom.summaryBlock.style.display = "none";
+        dom.ofSummaryDetails.innerHTML = "";
+      }
+
+      // Table view
+      const visibleCols = [colUser, colObj, colFld, colQry, colTime]
+        .filter((v, i, arr) => v && arr.indexOf(v) === i);
+
+      if (!filteredRows.length || !visibleCols.length) {
+        dom.tableWrapper.style.display = "none";
+        dom.btnDownloadFiltered.disabled = filteredRows.length === 0;
+        return;
+      }
+
+      dom.resultsHeaderRow.innerHTML = "";
+      visibleCols.forEach(col => {
+        const th = document.createElement("th");
+        th.textContent = col;
+        dom.resultsHeaderRow.appendChild(th);
+      });
+
+      dom.resultsBody.innerHTML = "";
+      filteredRows.slice(0, MAX_TABLE_ROWS).forEach(row => {
+        const tr = document.createElement("tr");
+        visibleCols.forEach(col => {
+          const td = document.createElement("td");
+          const val = (row[col] || "").toString();
+          td.textContent = val;
+          if (col.toLowerCase().includes("query") || col.toLowerCase().includes("soql")) {
+            td.classList.add("mono");
+          }
+          tr.appendChild(td);
+        });
+        dom.resultsBody.appendChild(tr);
+      });
+
+      dom.tableWrapper.style.display = "block";
+      dom.btnDownloadFiltered.disabled = filteredRows.length === 0;
+    }
+
+    // Export filtered rows to CSV (all, not just displayed rows)
+    dom.btnDownloadFiltered.addEventListener("click", () => {
+      if (!filteredRows.length) return;
+
+      const colUser = dom.colUserId.value || "";
+      const colObj = dom.colObject.value || "";
+      const colFld = dom.colField.value || "";
+      const colQry = dom.colQuery.value || "";
+      const colTime = dom.colTimestamp.value || "";
+
+      const visibleCols = [colUser, colObj, colFld, colQry, colTime]
+        .filter((v, i, arr) => v && arr.indexOf(v) === i);
+
+      if (!visibleCols.length) {
+        setStatus("No columns selected for export.", true);
+        return;
+      }
+
+      const rows = [visibleCols.join(",")];
+      filteredRows.forEach(r => {
+        const line = visibleCols.map(col => {
+          let v = (r[col] || "").toString().replace(/"/g, '""');
+          if (v.includes(",") || v.includes('"') || v.includes("\n")) {
+            v = `"${v}"`;
+          }
+          return v;
+        }).join(",");
+        rows.push(line);
+      });
+
+      const csvContent = rows.join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "filtered_event_logs.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
