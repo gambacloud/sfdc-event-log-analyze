@@ -1,0 +1,101 @@
+TIMESTAMP,USER_ID,EVENT_TYPE,RESP_OBJECT_TYPE,RESP_FIELD,QUERY
+2025-01-01T08:00:00,005A0000001XYZ2,URI,Case,Subject,/lightning/r/Case/someId/view
+2025-01-01T08:05:00,005A0000001XYZ2,URI,Opportunity,StageName,/lightning/r/Opportunity/someId/view
+2025-01-01T08:10:00,005A0000001XYZ3,URI,Case,Subject,/lightning/r/Case/someId/view
+2025-01-01T08:15:00,005A0000001XYZ3,API,Contact,FirstName,"SELECT Id, FirstName FROM Contact WHERE Email LIKE '%@example.com'"
+2025-01-01T08:20:00,005A0000001XYZ1,ReportExport,Account,Industry,Report export on Account
+2025-01-01T08:25:00,005A0000001XYZ1,URI,Opportunity,CloseDate,/lightning/r/Opportunity/someId/view
+2025-01-01T08:30:00,005A0000001XYZ2,URI,Opportunity,CloseDate,/lightning/r/Opportunity/someId/view
+2025-01-01T08:35:00,005A0000001XYZ1,API,Case,Origin,"SELECT Id, Origin FROM Case WHERE Status = 'New'"
+2025-01-01T08:40:00,005A0000001XYZ1,API,Case,Subject,"SELECT Id, Subject FROM Case WHERE Status = 'New'"
+2025-01-01T08:45:00,005A0000001XYZ3,API,Contact,LastName,"SELECT Id, LastName FROM Contact WHERE Email LIKE '%@example.com'"
+2025-01-01T08:50:00,005A0000001XYZ3,ApexExecution,Lead,Company,"SELECT Id, Company FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T08:55:00,005A0000001XYZ1,ReportExport,Account,BillingCountry,Report export on Account
+2025-01-01T09:00:00,005A0000001XYZ1,ApexExecution,Lead,LastName,"SELECT Id, LastName FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T09:05:00,005A0000001XYZ1,API,Lead,LastName,"SELECT Id, LastName FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T09:10:00,005A0000001XYZ3,URI,Contact,Email,/lightning/r/Contact/someId/view
+2025-01-01T09:15:00,005A0000001XYZ1,API,Contact,FirstName,"SELECT Id, FirstName FROM Contact WHERE Email LIKE '%@example.com'"
+2025-01-01T09:20:00,005A0000001XYZ3,API,Case,Priority,"SELECT Id, Priority FROM Case WHERE Status = 'New'"
+2025-01-01T09:25:00,005A0000001XYZ1,ApexExecution,Opportunity,CloseDate,"SELECT Id, CloseDate FROM Opportunity WHERE Amount > 10000"
+2025-01-01T09:30:00,005A0000001XYZ3,URI,Case,Priority,/lightning/r/Case/someId/view
+2025-01-01T09:35:00,005A0000001XYZ2,URI,Account,BillingCountry,/lightning/r/Account/someId/view
+2025-01-01T09:40:00,005A0000001XYZ1,API,Case,Origin,"SELECT Id, Origin FROM Case WHERE Status = 'New'"
+2025-01-01T09:45:00,005A0000001XYZ1,URI,Lead,Company,/lightning/r/Lead/someId/view
+2025-01-01T09:50:00,005A0000001XYZ3,API,Opportunity,Name,"SELECT Id, Name FROM Opportunity WHERE Amount > 10000"
+2025-01-01T09:55:00,005A0000001XYZ1,ReportExport,Opportunity,Amount,Report export on Opportunity
+2025-01-01T10:00:00,005A0000001XYZ2,URI,Account,Name,/lightning/r/Account/someId/view
+2025-01-01T10:05:00,005A0000001XYZ1,ApexExecution,Opportunity,CloseDate,"SELECT Id, CloseDate FROM Opportunity WHERE Amount > 10000"
+2025-01-01T10:10:00,005A0000001XYZ1,URI,Contact,Email,/lightning/r/Contact/someId/view
+2025-01-01T10:15:00,005A0000001XYZ2,API,Account,Name,"SELECT Id, Name FROM Account WHERE Industry = 'Technology'"
+2025-01-01T10:20:00,005A0000001XYZ3,ReportExport,Lead,Phone,Report export on Lead
+2025-01-01T10:25:00,005A0000001XYZ3,ApexExecution,Contact,FirstName,"SELECT Id, FirstName FROM Contact WHERE Email LIKE '%@example.com'"
+2025-01-01T10:30:00,005A0000001XYZ2,ReportExport,Case,Status,Report export on Case
+2025-01-01T10:35:00,005A0000001XYZ3,URI,Contact,Email,/lightning/r/Contact/someId/view
+2025-01-01T10:40:00,005A0000001XYZ1,URI,Case,Status,/lightning/r/Case/someId/view
+2025-01-01T10:45:00,005A0000001XYZ3,ApexExecution,Contact,FirstName,"SELECT Id, FirstName FROM Contact WHERE Email LIKE '%@example.com'"
+2025-01-01T10:50:00,005A0000001XYZ3,ReportExport,Case,Status,Report export on Case
+2025-01-01T10:55:00,005A0000001XYZ3,ApexExecution,Case,Priority,"SELECT Id, Priority FROM Case WHERE Status = 'New'"
+2025-01-01T11:00:00,005A0000001XYZ1,ApexExecution,Contact,Phone,"SELECT Id, Phone FROM Contact WHERE Email LIKE '%@example.com'"
+2025-01-01T11:05:00,005A0000001XYZ3,ApexExecution,Opportunity,Amount,"SELECT Id, Amount FROM Opportunity WHERE Amount > 10000"
+2025-01-01T11:10:00,005A0000001XYZ1,API,Contact,LastName,"SELECT Id, LastName FROM Contact WHERE Email LIKE '%@example.com'"
+2025-01-01T11:15:00,005A0000001XYZ2,URI,Lead,Email,/lightning/r/Lead/someId/view
+2025-01-01T11:20:00,005A0000001XYZ3,ReportExport,Account,Name,Report export on Account
+2025-01-01T11:25:00,005A0000001XYZ1,ApexExecution,Case,Priority,"SELECT Id, Priority FROM Case WHERE Status = 'New'"
+2025-01-01T11:30:00,005A0000001XYZ3,API,Lead,LastName,"SELECT Id, LastName FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T11:35:00,005A0000001XYZ2,ApexExecution,Lead,Email,"SELECT Id, Email FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T11:40:00,005A0000001XYZ1,API,Account,Industry,"SELECT Id, Industry FROM Account WHERE Industry = 'Technology'"
+2025-01-01T11:45:00,005A0000001XYZ1,URI,Opportunity,Name,/lightning/r/Opportunity/someId/view
+2025-01-01T11:50:00,005A0000001XYZ1,API,Account,Name,"SELECT Id, Name FROM Account WHERE Industry = 'Technology'"
+2025-01-01T11:55:00,005A0000001XYZ1,URI,Opportunity,StageName,/lightning/r/Opportunity/someId/view
+2025-01-01T12:00:00,005A0000001XYZ3,URI,Opportunity,Name,/lightning/r/Opportunity/someId/view
+2025-01-01T12:05:00,005A0000001XYZ1,ApexExecution,Opportunity,CloseDate,"SELECT Id, CloseDate FROM Opportunity WHERE Amount > 10000"
+2025-01-01T12:10:00,005A0000001XYZ3,URI,Lead,Email,/lightning/r/Lead/someId/view
+2025-01-01T12:15:00,005A0000001XYZ3,ApexExecution,Account,Name,"SELECT Id, Name FROM Account WHERE Industry = 'Technology'"
+2025-01-01T12:20:00,005A0000001XYZ1,ReportExport,Contact,FirstName,Report export on Contact
+2025-01-01T12:25:00,005A0000001XYZ1,URI,Opportunity,CloseDate,/lightning/r/Opportunity/someId/view
+2025-01-01T12:30:00,005A0000001XYZ2,ApexExecution,Lead,Status,"SELECT Id, Status FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T12:35:00,005A0000001XYZ3,ReportExport,Lead,LastName,Report export on Lead
+2025-01-01T12:40:00,005A0000001XYZ2,ApexExecution,Account,BillingCity,"SELECT Id, BillingCity FROM Account WHERE Industry = 'Technology'"
+2025-01-01T12:45:00,005A0000001XYZ3,URI,Contact,FirstName,/lightning/r/Contact/someId/view
+2025-01-01T12:50:00,005A0000001XYZ1,API,Lead,Company,"SELECT Id, Company FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T12:55:00,005A0000001XYZ3,ReportExport,Case,Origin,Report export on Case
+2025-01-01T13:00:00,005A0000001XYZ3,ReportExport,Account,BillingCountry,Report export on Account
+2025-01-01T13:05:00,005A0000001XYZ1,ApexExecution,Case,Status,"SELECT Id, Status FROM Case WHERE Status = 'New'"
+2025-01-01T13:10:00,005A0000001XYZ2,API,Lead,Email,"SELECT Id, Email FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T13:15:00,005A0000001XYZ2,ApexExecution,Lead,Email,"SELECT Id, Email FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T13:20:00,005A0000001XYZ3,API,Lead,Status,"SELECT Id, Status FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T13:25:00,005A0000001XYZ2,API,Account,BillingCity,"SELECT Id, BillingCity FROM Account WHERE Industry = 'Technology'"
+2025-01-01T13:30:00,005A0000001XYZ3,API,Lead,LastName,"SELECT Id, LastName FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T13:35:00,005A0000001XYZ2,ApexExecution,Contact,Phone,"SELECT Id, Phone FROM Contact WHERE Email LIKE '%@example.com'"
+2025-01-01T13:40:00,005A0000001XYZ2,API,Opportunity,Amount,"SELECT Id, Amount FROM Opportunity WHERE Amount > 10000"
+2025-01-01T13:45:00,005A0000001XYZ1,URI,Account,BillingCity,/lightning/r/Account/someId/view
+2025-01-01T13:50:00,005A0000001XYZ3,ApexExecution,Contact,Email,"SELECT Id, Email FROM Contact WHERE Email LIKE '%@example.com'"
+2025-01-01T13:55:00,005A0000001XYZ2,ReportExport,Case,Priority,Report export on Case
+2025-01-01T14:00:00,005A0000001XYZ3,ApexExecution,Contact,FirstName,"SELECT Id, FirstName FROM Contact WHERE Email LIKE '%@example.com'"
+2025-01-01T14:05:00,005A0000001XYZ1,API,Opportunity,CloseDate,"SELECT Id, CloseDate FROM Opportunity WHERE Amount > 10000"
+2025-01-01T14:10:00,005A0000001XYZ3,ReportExport,Opportunity,Name,Report export on Opportunity
+2025-01-01T14:15:00,005A0000001XYZ2,URI,Contact,Email,/lightning/r/Contact/someId/view
+2025-01-01T14:20:00,005A0000001XYZ1,ReportExport,Contact,FirstName,Report export on Contact
+2025-01-01T14:25:00,005A0000001XYZ2,ApexExecution,Lead,Status,"SELECT Id, Status FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T14:30:00,005A0000001XYZ1,ReportExport,Lead,LastName,Report export on Lead
+2025-01-01T14:35:00,005A0000001XYZ3,URI,Lead,Status,/lightning/r/Lead/someId/view
+2025-01-01T14:40:00,005A0000001XYZ1,API,Lead,Company,"SELECT Id, Company FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T14:45:00,005A0000001XYZ1,ReportExport,Opportunity,Amount,Report export on Opportunity
+2025-01-01T14:50:00,005A0000001XYZ3,ReportExport,Lead,Email,Report export on Lead
+2025-01-01T14:55:00,005A0000001XYZ3,ReportExport,Lead,Status,Report export on Lead
+2025-01-01T15:00:00,005A0000001XYZ2,ReportExport,Contact,Email,Report export on Contact
+2025-01-01T15:05:00,005A0000001XYZ1,ApexExecution,Case,Subject,"SELECT Id, Subject FROM Case WHERE Status = 'New'"
+2025-01-01T15:10:00,005A0000001XYZ2,ReportExport,Opportunity,Name,Report export on Opportunity
+2025-01-01T15:15:00,005A0000001XYZ2,ReportExport,Opportunity,CloseDate,Report export on Opportunity
+2025-01-01T15:20:00,005A0000001XYZ1,API,Case,Origin,"SELECT Id, Origin FROM Case WHERE Status = 'New'"
+2025-01-01T15:25:00,005A0000001XYZ1,ApexExecution,Contact,Email,"SELECT Id, Email FROM Contact WHERE Email LIKE '%@example.com'"
+2025-01-01T15:30:00,005A0000001XYZ2,ReportExport,Contact,Phone,Report export on Contact
+2025-01-01T15:35:00,005A0000001XYZ3,URI,Lead,Email,/lightning/r/Lead/someId/view
+2025-01-01T15:40:00,005A0000001XYZ1,URI,Account,Name,/lightning/r/Account/someId/view
+2025-01-01T15:45:00,005A0000001XYZ2,URI,Opportunity,Name,/lightning/r/Opportunity/someId/view
+2025-01-01T15:50:00,005A0000001XYZ2,API,Contact,Email,"SELECT Id, Email FROM Contact WHERE Email LIKE '%@example.com'"
+2025-01-01T15:55:00,005A0000001XYZ2,ApexExecution,Opportunity,Name,"SELECT Id, Name FROM Opportunity WHERE Amount > 10000"
+2025-01-01T16:00:00,005A0000001XYZ3,API,Lead,Phone,"SELECT Id, Phone FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T16:05:00,005A0000001XYZ2,ApexExecution,Lead,Phone,"SELECT Id, Phone FROM Lead WHERE CreatedDate = LAST_N_DAYS:7"
+2025-01-01T16:10:00,005A0000001XYZ2,API,Opportunity,Name,"SELECT Id, Name FROM Opportunity WHERE Amount > 10000"
+2025-01-01T16:15:00,005A0000001XYZ2,API,Case,Origin,"SELECT Id, Origin FROM Case WHERE Status = 'New'"
