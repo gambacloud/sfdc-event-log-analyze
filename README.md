@@ -179,3 +179,7 @@ Event Monitoring Overview
 Need sample data?
 
 A 100-row sample EventLogFile CSV is included for testing.
+
+## Related tools
+
+- [salesforce-debugtool](https://github.com/gambacloud/salesforce-debugtool) — manage, review, and analyze Salesforce debug logs ([live](https://salesforce-debugtool.herokuapp.com/))
